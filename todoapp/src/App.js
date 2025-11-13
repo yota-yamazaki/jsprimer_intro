@@ -31,36 +31,46 @@ export class App {
     this.#todoListModel.deleteTodo({ id });
   }
 
-  mount() {
-    const formElement = document.querySelector("#js-form");
-    const inputElement = document.querySelector("#js-form-input");
-    const todoItemCountElement = document.querySelector("#js-todo-count");
-    const containerElement = document.querySelector("#js-todo-list");
+  #formElement = document.querySelector("#js-form");
+  #inputElement = document.querySelector("#js-form-input");
+  #todoItemCountElement = document.querySelector("#js-todo-count");
+  #containerElement = document.querySelector("#js-todo-list");
 
-    // todoリストを取得して、レンダリングする関数
-    const render_list = () => {
-      const todoItems = this.#todoListModel.getTodoItems();
-      const todoListElement = this.#todoListView.createElement(todoItems, {
-                // Appに定義したリスナー関数を呼び出す
-                onUpdateTodo: ({ id, completed }) => {
-                  this.handleUpdate({ id, completed });
-                },
-                onDeleteTodo: ({ id }) => {
-                  this.handleDelete({ id });
-                }
-              });
+  // todoリストを取得して、レンダリングする関数
+  #render_list = () => {
+    const todoItems = this.#todoListModel.getTodoItems();
+    const todoListElement = this.#todoListView.createElement(todoItems, {
+      // Appに定義したリスナー関数を呼び出す
+      onUpdateTodo: ({ id, completed }) => {
+        this.handleUpdate({ id, completed });
+      },
+      onDeleteTodo: ({ id }) => {
+        this.handleDelete({ id });
+      }
+    });
 
-      render(todoListElement, containerElement);
-      todoItemCountElement.textContent = `Todoアイテム数: ${this.#todoListModel.getTotalCount()}`;
-    }
+    render(todoListElement, this.#containerElement);
+    this.#todoItemCountElement.textContent = `Todoアイテム数: ${this.#todoListModel.getTotalCount()}`;
+  }
 
+  mount(){
     // 登録
-    this.#todoListModel.onChange(render_list);
+    this.#todoListModel.onChange(this.#render_list);
 
-    formElement.addEventListener("submit", (event) => {
+    this.#formElement.addEventListener("submit", (event) => {
       event.preventDefault();
-      this.handleAdd(inputElement.value);
-      inputElement.value = "";
+      this.handleAdd(this.#inputElement.value);
+      this.#inputElement.value = "";
+    });
+  }
+
+  unmount(){
+    this.#todoListModel.offChange(this.#render_list);
+
+    this.#formElement.removeEventListener("submit", (event) => {
+      event.preventDefault();
+      this.handleAdd(this.#inputElement.value);
+      this.#inputElement.value = "";
     });
   }
 }
