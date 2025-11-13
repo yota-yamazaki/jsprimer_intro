@@ -13,17 +13,25 @@ export class App {
     const todoItemCountElement = document.querySelector("#js-todo-count");
     // 2. TodoListModelの状態が更新されたら表示を更新する
     this.#todoListModel.onChange(() => {
-      // TodoリストをまとめるList要素
       const todoListElement = element`<ul></ul>`;
-      // それぞれのTodoItem要素をtodoListElement以下へ追加する
       const todoItems = this.#todoListModel.getTodoItems();
       todoItems.forEach(item => {
-        const todoItemElement = element`<li>${item.title}</li>`;
+        // 完了済みならchecked属性をつけ、未完了ならchecked属性を外す
+        const todoItemElement = item.completed
+          ? element`<li><input type="checkbox" class="checkbox" checked><s>${item.title}</s></li>`
+          : element`<li><input type="checkbox" class="checkbox">${item.title}</li>`;
+        // チェックボックスがトグルしたときのイベントにリスナー関数を登録
+        const inputCheckboxElement = todoItemElement.querySelector(".checkbox");
+        inputCheckboxElement.addEventListener("change", () => {
+          // 指定したTodoアイテムの完了状態を反転させる
+          this.#todoListModel.updateTodo({
+            id: item.id,
+            completed: !item.completed
+          });
+        });
         todoListElement.appendChild(todoItemElement);
       });
-      // コンテナ要素の中身をTodoリストをまとめるList要素で上書きする
       render(todoListElement, containerElement);
-      // アイテム数の表示を更新mode
       todoItemCountElement.textContent = `Todoアイテム数: ${this.#todoListModel.getTotalCount()}`;
     });
 
